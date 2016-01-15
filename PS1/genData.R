@@ -9,9 +9,13 @@ genData<-function(N,degrees,start,noise){
   # noise<-blending together
 
   #necessary packages
-  if (!require("ggplot2")) install.packages("ggplot2");
+  if (!require("ggplot2")) install.packages("ggplot2")
   library(ggplot2)
+  if (!require("extrafont")) install.packages("extrafont")
+  library(extrafont)
+  
     
+  
   #define some variables
   degrees2rad<-(2*pi)/360 #convert degrees to radiant
   start<- start*degrees2rad #how far away from 00 the spiral starts

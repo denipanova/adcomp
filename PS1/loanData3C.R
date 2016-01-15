@@ -1,9 +1,11 @@
 
+
 #necessary packages
 if (!require("ggplot2")) install.packages("ggplot2")
 library(ggplot2)
 if (!require("mvtnorm")) install.packages("mtvnorm")
 library(mvtnorm)
+
 
 #create sigma matrix
 sigmaXY <- function(rho, sdX, sdY) {
@@ -42,22 +44,10 @@ loanData <- function(noApproved, noDenied, noUndecided, muApproved, muDenied, mu
   return(loanDf)
 }
 
-#EXAMPLE
-noApproved <- 1000; noDenied <- 1000; noUndecided<-500
-loanDf <- loanData(noApproved, noDenied, noUndecided, c(4, 180), c(13, 80), c(7,130), 
-                   c(2,20), c(2,30), c(2,25),-0.5, 0.3, 0.05)
-
-#PLOT the EXAMPLE to see if it is ok
-
-plot1c <- function() {
-  ggplot(data = loanDf, 
-         aes(x = solvency, y = PIratio, colour=deny)) + 
-    geom_point() +
-    xlab("solvency") +
-    ylab("PI ratio") 
-}
-
-plot1c()
+#Synthetic Data
+noApproved <- 50; noDenied <- 50; noUndecided <- 50
+loanDf <- loanData(noApproved, noDenied, noUndecided, c(4, 180), c(13, 80) , c(7, 130), 
+                   c(2,20), c(2,30), c(2,25), -0.5, 0.3, 0.05 )
 
 #add dummy variables to the data frame 
 loanDf <- cbind(loanDf, 
@@ -90,34 +80,48 @@ write.csv(predictedData,file = "predictions.csv")
 
 #Create the decision boundaries
 
-#line1 
-int1<- -(w[1,2]-w[1,1])/(w[3,2]-w[3,1])
-sl1<- -(w[2,2]-w[2,1])/(w[3,2]-w[3,1])
+#line1 A vs D
+int1<- (w[1,2]-w[1,1])/(w[2,1]-w[2,2])
+sl1<- (w[3,2]-w[3,1])/(w[2,1]-w[2,2])
 
-#int<- (w[1,2]-w[1,1])/(w[2,1]-w[2,2])
-#sl<- (w[3,2]-w[2,1])/(w[2,1]-w[2,2])
-
-#line2
-int2<- -(w[1,3]-w[1,1])/(w[3,3]-w[3,1])
-sl2<- -(w[2,3]-w[2,1])/(w[3,3]-w[3,1])
-#line3
-int3<- -(w[1,2]-w[1,3])/(w[3,2]-w[3,3])
-sl3<- -(w[2,2]-w[2,3])/(w[3,2]-w[3,3])
+#line2 A vs U
+int2<- (w[1,3]-w[1,1])/(w[2,1]-w[2,3])
+sl2<- (w[3,3]-w[3,1])/(w[2,1]-w[2,3])
+#line D vs U
+int3<- (w[1,2]-w[1,3])/(w[2,3]-w[2,2])
+sl3<- (w[3,2]-w[3,3])/(w[2,3]-w[2,2])
 
 #constructing x and y for each line 
-x <- seq(min(loanDf["PIratio"]), max(loanDf["PIratio"]), 
+x <- seq(min(loanDf["solvency"]), max(loanDf["solvency"]), 
          length.out = nrow(loanDf))
 y1 <- int1+sl1*x
 y2 <- int2+sl2*x
 y3 <- int3+sl3*x
 
+#Creating the half-lines/planes 
+xCheck1<-as.matrix(cbind(1,y1,x)) #because we have solvency as the first variable
+predictionCheck1<-xCheck1%*%w
+blank1<-x
+blank1[predictionCheck1[,1]<= predictionCheck1[,3]] <-NA #here the first and second column are equal,so we check with the 3rd one
+
+xCheck2<-as.matrix(cbind(1,y2,x)) 
+predictionCheck2<-xCheck2%*%w
+blank2<-x
+blank2[predictionCheck2[,1]<= predictionCheck2[,2]] <-NA
+
+xCheck3<-as.matrix(cbind(1,y3,x)) 
+predictionCheck3<-xCheck3%*%w
+blank3<-x
+blank3[predictionCheck3[,2]<= predictionCheck3[,1]] <-NA
+
 # constructing the boundaty lines as functions
-boundaryDf1 <- data.frame(PIratio=x, solvency=y1, 
+
+boundaryDf1 <- data.frame(PIratio=y1, solvency=blank1, 
                          deny=rep("Boundary1", length(x)))
 
-boundaryDf2 <- data.frame(PIratio=x, solvency=y2, 
+boundaryDf2 <- data.frame(PIratio=y2, solvency=blank2, 
                           deny=rep("Boundary2", length(x)))
-boundaryDf3 <- data.frame(PIratio=x, solvency=y3, 
+boundaryDf3 <- data.frame(PIratio=y3, solvency=blank3, 
                           deny=rep("Boundary3", length(x)))
 plotDiscFnc <- function() {
   ggplot(data = loanDf, 
@@ -125,13 +129,14 @@ plotDiscFnc <- function() {
     geom_point() +
     xlab("solvency") +
     ylab("PI ratio") +
-    geom_line(data=boundaryDf1) + geom_line(data=boundaryDf2)+geom_line(data=boundaryDf3) +
-    scale_color_manual("", 
-                       values = c("Boundary1" = "grey", "Boundary2" = "black","Boundary3" = "green", 
-                                  "Approved" = "blue", "Denied" = "red","Undefined"="orange"))
-
+    geom_line(data=boundaryDf1) + geom_line(data=boundaryDf2)+ geom_line(data=boundaryDf3) +
+    scale_color_manual("Target", 
+                       values = c("Boundary1" = "violet", "Boundary2" = "black","Boundary3" = "green", 
+                                  "Approved" = "blue", "Denied" = "red","Undecided"="orange")) +
+    
    ggsave("discFunction3C.pdf") #save the graph 
 }
+
 plotDiscFnc()
 
 
