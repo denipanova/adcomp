@@ -5,8 +5,13 @@ shinyUI(fluidPage( #how the page to llok like
   titlePanel('Loan Data'), #title
   
   tabsetPanel(
-    tabPanel("Plot of Accepted and Denied Loans",plotOutput("plot1",height="auto")),
-    tabPanel("Confusion Matrix",tableOutput("confmatrix"))
+    tabPanel("Plot of Accepted and Denied Loans",
+             br(),
+             div(plotOutput("plot1",height="auto"),align="center")),
+    tabPanel("Confusion Matrix",
+             br(),
+             br(),
+             div(tableOutput("confmatrix"), align="center"))
   ),
   
   hr(),

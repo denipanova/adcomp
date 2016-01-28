@@ -63,7 +63,7 @@ shinyServer(function(input, output, session) {
       # confusion matrices
       confMatrixFreq <- table(loanDf$deny, predictedLabels)
       confMatrixFreq
-      confMatrixProp <- as.data.frame(prop.table(confMatrixFreq, 1))
+      confMatrixProp <- prop.table(confMatrixFreq, 1)
   
       return(list(loanDf,boundaryDf,confMatrixProp))
       
@@ -93,6 +93,6 @@ shinyServer(function(input, output, session) {
   }, height = 400, width=600)
   
   output$confmatrix<-renderTable({
-    head(data()[[1]])
+    data()[[3]]
   })
 })
