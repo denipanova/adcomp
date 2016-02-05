@@ -4,7 +4,9 @@ train<-read.csv("MNIST_training.csv", header = FALSE)
 #setwd("/home/didi/BGSE/semester2/adcomp/adcomp")
 source("kNNNoDist.R")
 source("DistanceMatrix.R")
+source("kNN.R")
 
+if (!require("class")) install.packages("class");
 library("class")
 #Take random small sample in order to validate
 s_indeces<-sample.int(6000, size = 1000)
@@ -40,9 +42,11 @@ for (j in 1:length(distMeasure)){
 test<-read.csv("MNIST_test.csv", header = FALSE)
 memory<- train[,-1]
 labels<- train[,1]
-predictions<-kNN(features=test,labels = labels, train_set = memory, k=1, p=2)
 
-predLabels<-predictions$predLables
+mat<-DistanceMatrix()
+predictions<-kNN(features=test,labels = labels, train_set = memory, k=1, p=2, type = "predict")
 
-write.csv(predLabels,"MNIST_predictions.csv")
+mnistlab<-as.vector(predictions$predLabels)
+
+write.csv(mnistlab,"MNIST_predictions.csv", row.names = FALSE)
 
