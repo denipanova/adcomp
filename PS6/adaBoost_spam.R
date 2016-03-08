@@ -1,3 +1,8 @@
+#******************************************
+# Compare My Adaboost with the GBM adaboost 
+#******************************************
+
+
 ## packages 
 if (!require("gbm")) install.packages("gbm"); library(gbm)
 if (!require("dplyr")) install.packages("dplyr");library(dplyr)
@@ -7,12 +12,11 @@ if (!require("ggplot2")) install.packages("ggplot2");library(ggplot2)
 
 ## load the data
 
-data <- read.csv("/home/didi/BGSE/semester2/adcomp/adcomp/spambase.data", 
-                 header=FALSE)
+data <- read.csv("spambase.data", header=FALSE)
 
 ## source the function 
-#source("adaBoost.R")
-#source("predictionAdaBoost.R")
+source("adaBoost.R")
+source("predictionAdaBoost.R")
 
 ## split the data train and test data
 set.seed(1234)
@@ -21,10 +25,7 @@ test<-data[test_inx,]
 train<-data[-test_inx,]
 
 #specify the other coefficients
-#formula<-V58 ~ V1 + V2 + V57
 depth <- 5
-#noTrees<-5
-
 
 # DO adaBoost with the package 
 noIterations <- 200
@@ -82,4 +83,5 @@ plotBoost <-
   #theme_bw()+
   ggtitle("Test and Train errors for GBM and MYAdaBoost functions")
 
+# save the file 
 ggsave("adaBoost.pdf",plotBoost)
